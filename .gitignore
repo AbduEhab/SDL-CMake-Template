@@ -1,0 +1,8 @@
+.vs/
+.vscode/
+
+[Bb][Uu][Ii][Ll][Dd]/
+
+out/
+
+CMakeSettings.json
