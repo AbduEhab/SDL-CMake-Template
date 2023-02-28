@@ -1,16 +1,14 @@
-# Set CMake version number
 cmake_minimum_required(VERSION 3.13)
 
-# Change "Cmake-Template" to your project name
-project(Cmake-Template VERSION 0.8.0 LANGUAGES CXX)
+project(SDL_TEMPLATE VERSION 0.1.0 LANGUAGES CXX)
 enable_language(CXX)
 
 # ----------------------------------------------------------------------------------------------
-# Part till line 75 is derived from @lefticus
+# Part till line 71 is taken from @lefticus
 
 # set a default CXX standard used by the external tools like clang-tidy, cppcheck, etc.
 # You can later set fine-grained standards for each target using `target_compile_features`
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 # ## Add project_options
 # include(FetchContent)
@@ -75,7 +73,7 @@ endif()
 # ----------------------------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------------------------
-# Part till line 99 is very very similar to that of @codetechandtutorials
+# Part till line 102 is very very similar to that of @codetechandtutorials
 
 # DOWNLOAD ALL THE SUBMODULES
 find_package(Git QUIET)
@@ -84,34 +82,36 @@ if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
     # Update submodules as needed
     option(GIT_SUBMODULE "Check submodules during build" ON)
 
-    if(GIT_SUBMODULE)
+    if(NOT GIT_SUBMODULE) # Check submodules during build (SET TO 0 TO AVOID UPDATING)
         message(STATUS "Submodule update")
-        execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive --remote --merge
+
+        execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
             RESULT_VARIABLE GIT_SUBMOD_RESULT)
 
         if(NOT GIT_SUBMOD_RESULT EQUAL "0")
-            message(FATAL_ERROR "git submodule update --init failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
+            message(FATAL_ERROR "git submodule update --init --recursive failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
         endif()
     endif()
 endif()
 
 # ----------------------------------------------------------------------------------------------
-
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING
         "Build not specified, defaulted to RelWithDebInfo" FORCE)
     message(STATUS "Build type not specified, defaulted to RelWithDebInfo")
 endif(NOT CMAKE_BUILD_TYPE)
 
+# <-- SDL OPTIONS -->
+set(USE_SDL_IMAGE OFF)
+set(USE_SDL_MIXER OFF)
+set(USE_SDL_TTF OFF)
+set(USE_SDL_NET OFF)
+
 # Add locations of other CMakelists.txt (one per call)
 add_subdirectory(
     src
 )
-
-# Comment these 2 out if you don't intend on using CTests
-include(CTest)
-enable_testing()
 
 # Extra C++ specific option I need
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -120,18 +120,6 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
 
 # <----------------------->
-
-# <-- Define warnings to show -->
-target_link_libraries(${PROJECT_NAME} PRIVATE project_options project_warnings)
-
-# <----------------------------->
-
-# <-- Comment out if you don't need CPack -->
-set(CPACK_PROJECT_NAME ${PROJECT_NAME})
-set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
-include(CPack)
-
-# <----------------------------------------->
 
 # <-- Define Compile Time Definitions here: -->
 target_compile_definitions(${PROJECT_NAME} PRIVATE
@@ -143,10 +131,130 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 
 # <------------------------------------------->
 
+# if folder not avalable
+if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/external/SDL)
+    # Clone the submodule
+    execute_process(
+        COMMAND git submodule add https://github.com/libsdl-org/SDL.git external/SDL
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+    execute_process(
+        COMMAND git checkout release-2.26.x
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/external/SDL/
+    )
+endif()
+
+# Add the submodule directory to the include path
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/include)
+
+# Add the submodule library to the project
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/SDL)
+
+# Link the submodule library to the main project
+target_link_libraries(${PROJECT_NAME} PRIVATE SDL2)
+
+if(USE_SDL_IMAGE)
+    if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/external/SDL_image)
+        execute_process(
+            COMMAND git submodule add https://github.com/libsdl-org/SDL_image.git external/SDL_image
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        )
+        execute_process(
+            COMMAND git checkout release-2.6.x
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/external/SDL_image/
+        )
+    endif()
+
+    set(SDL2IMAGE_INSTALL OFF)
+
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/SDL_image)
+
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/SDL_image)
+
+    target_link_libraries(${PROJECT_NAME} PRIVATE SDL2_image)
+endif()
+
+if(USE_SDL_MIXER)
+    if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/external/SDL_mixer)
+        execute_process(
+            COMMAND git submodule add https://github.com/libsdl-org/SDL_mixer.git external/SDL_mixer --recursive
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        )
+        execute_process(
+            COMMAND git checkout release-2.6.x
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/external/SDL_mixer/
+        )
+    endif()
+
+    set(SDL2MIXER_INSTALL OFF)
+
+    set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-Wl,--exclude-libs,SDL2_mixer.lib")
+
+    # Add the submodule directory to the include path
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/SDL_mixer/include)
+
+    # Add the submodule library to the project
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/SDL_mixer)
+
+    # Link the submodule library to the main project
+    target_link_libraries(${PROJECT_NAME} PRIVATE SDL2_mixer)
+endif()
+
+if(USE_SDL_TTF)
+    if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/external/SDL_ttf)
+        execute_process(
+            COMMAND git submodule add https://github.com/libsdl-org/SDL_ttf.git external/SDL_ttf --recursive
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        )
+        execute_process(
+            COMMAND git checkout release-2.20.x
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/external/SDL_ttf/
+        )
+    endif()
+
+    set(SDL2TTF_INSTALL OFF)
+
+    # Add the submodule directory to the include path
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/SDL_ttf)
+
+    # Add the submodule library to the project
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/SDL_ttf)
+
+    # Link the submodule library to the main project
+    target_link_libraries(${PROJECT_NAME} PRIVATE SDL2_ttf)
+endif()
+
+if(USE_SDL_NET)
+    if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/external/SDL_net)
+        execute_process(
+            COMMAND git submodule add https://github.com/libsdl-org/SDL_net.git external/SDL_net
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        )
+        execute_process(
+            COMMAND git checkout release-2.2.x
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/external/SDL_net/
+        )
+    endif()
+
+    set(SDL2NET_INSTALL OFF)
+
+    # Add the submodule directory to the include path
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/SDL_net)
+
+    # Add the submodule library to the project
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/SDL_net)
+
+    # Link the submodule library to the main project
+    target_link_libraries(${PROJECT_NAME} PRIVATE SDL2_net)
+endif()
+
 # <-- Add directories to include directory here: -->
 target_include_directories(${PROJECT_NAME}
     PUBLIC src
     PUBLIC include
+    PUBLIC external/SDL/include
+    PUBLIC external/glm
+    PUBLIC external/sdl_image
 )
 
 # <------------------------------------------------>
