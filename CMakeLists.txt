@@ -103,6 +103,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif(NOT CMAKE_BUILD_TYPE)
 
 # <-- SDL OPTIONS -->
+set(USE_SDL2 OFF)
 set(USE_SDL_IMAGE OFF)
 set(USE_SDL_MIXER OFF)
 set(USE_SDL_TTF OFF)
@@ -131,27 +132,31 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 
 # <------------------------------------------->
 
-# if folder not avalable
-if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/external/SDL)
-    # Clone the submodule
-    execute_process(
-        COMMAND git submodule add https://github.com/libsdl-org/SDL.git external/SDL
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    )
-    execute_process(
-        COMMAND git checkout release-2.26.x
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/external/SDL/
-    )
+if(USE_SDL2)
+	# if folder not avalable
+	if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/external/SDL)
+  	  # Clone the submodule
+  	  execute_process(
+  	      COMMAND git submodule add https://github.com/libsdl-org/SDL.git external/SDL
+ 	       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+ 	   )
+ 	   execute_process(
+ 	       COMMAND git checkout release-2.26.x
+ 	       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/external/SDL/
+ 	   )
+	endif()
+
+	# Add the submodule directory to the include path
+	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/include)
+
+	# Add the submodule library to the project
+	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/SDL)
+
+	# Link the submodule library to the main project
+	target_link_libraries(${PROJECT_NAME} PRIVATE SDL2)
+else()
+	message(STATUS "SDL3 is not supported yet but is coming soon (TM).")
 endif()
-
-# Add the submodule directory to the include path
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/include)
-
-# Add the submodule library to the project
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/SDL)
-
-# Link the submodule library to the main project
-target_link_libraries(${PROJECT_NAME} PRIVATE SDL2)
 
 if(USE_SDL_IMAGE)
     if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/external/SDL_image)
