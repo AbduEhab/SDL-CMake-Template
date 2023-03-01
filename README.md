@@ -1,6 +1,6 @@
-# Cmake-Template Repo
+# Overview
 
-For those who are like me and just wanna yoink some ready-to-go clean project files.
+Just enable the required features from the 'CMakeLists' and it'll add all the required 'submodules' and linker tags and even copy the 'DLLs' to the binary directory!
 
 ## Requirements (for compiling)
 - [CMake](https://cmake.org/)
