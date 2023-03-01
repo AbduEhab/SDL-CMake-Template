@@ -2,7 +2,7 @@
 
 Just enable the required features from the `CMakeLists` and it'll add all the required submodules and linker tags and even copy the DLLs to the binary directory on windows!
 
-> Only works in `Release` or "RelWithDebInfo' modes on windows as the debug sdl dlls are a pain to move.
+> Only works in `Release` or `RelWithDebInfo` modes on windows as the debug sdl dlls are a pain to move.
 
 ## Requirements (for compiling)
 - [CMake](https://cmake.org/)
