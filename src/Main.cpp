@@ -4,6 +4,8 @@
 #include <Constants.hpp>
 #include <SDL.h>
 #include <stdio.h>
+
+// uncomment the following lines if you want to use the SDL libraries (must be enabled in the CMakeLists.txt!!!)
 // #include <SDL_image.h>
 // #include <SDL_mixer.h>
 // #include <SDL_ttf.h>
@@ -19,7 +21,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *arg[])
 	}
 
 	// SDL Window setup
-	SDL_Window *window = SDL_CreateWindow("SDL2 Tutorial",
+	SDL_Window *window = SDL_CreateWindow("SDL Template",
 										  SDL_WINDOWPOS_UNDEFINED,
 										  SDL_WINDOWPOS_UNDEFINED,
 										  640, 480, 0);
