@@ -6,7 +6,7 @@ Just enable the required features from the `CMakeLists` (@line 105) and it'll ad
 
 ## Requirements (for compiling)
 - [CMake](https://cmake.org/)
-- x86 or x64 compiler (only tested with `MSVC`, `MinGW` on windows and `GCC` for UNIX)
+- x86 or x64 compiler (only tested with `MSVC` and `MinGW` on windows, and with `GCC` for UNIX)
 
 ## Profiling
 
