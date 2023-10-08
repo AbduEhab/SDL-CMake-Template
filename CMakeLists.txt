@@ -136,7 +136,7 @@ if(USE_SDL2)
     if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/external/SDL)
         # Clone the submodule
         execute_process(
-            COMMAND git submodule add https://github.com/libsdl-org/SDL.git external/SDL
+            COMMAND git submodule add --force https://github.com/libsdl-org/SDL.git external/SDL
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         )
         execute_process(
@@ -160,7 +160,7 @@ endif()
 if(USE_SDL_IMAGE)
     if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/external/SDL_image)
         execute_process(
-            COMMAND git submodule add https://github.com/libsdl-org/SDL_image.git external/SDL_image
+            COMMAND git submodule add --force https://github.com/libsdl-org/SDL_image.git external/SDL_image
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         )
         execute_process(
@@ -181,15 +181,15 @@ endif()
 if(USE_SDL_MIXER)
     if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/external/SDL_mixer)
         execute_process(
-            COMMAND git submodule add https://github.com/libsdl-org/SDL_mixer.git external/SDL_mixer
+            COMMAND git submodule add --force https://github.com/libsdl-org/SDL_mixer.git external/SDL_mixer
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         )
         execute_process(
             COMMAND git checkout release-2.6.x
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/external/SDL_mixer/
         )
-        execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
-            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/external/
+        execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/external/SDL_mixer
             RESULT_VARIABLE GIT_SUBMOD_RESULT)
     endif()
 
@@ -210,15 +210,15 @@ endif()
 if(USE_SDL_TTF)
     if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/external/SDL_ttf)
         execute_process(
-            COMMAND git submodule add https://github.com/libsdl-org/SDL_ttf.git external/SDL_ttf
+            COMMAND git submodule add --force https://github.com/libsdl-org/SDL_ttf.git external/SDL_ttf
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         )
         execute_process(
             COMMAND git checkout release-2.20.x
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/external/SDL_ttf/
         )
-        execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
-            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/external/
+        execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/external/SDL_ttf
             RESULT_VARIABLE GIT_SUBMOD_RESULT)
     endif()
 
@@ -237,7 +237,7 @@ endif()
 if(USE_SDL_NET)
     if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/external/SDL_net)
         execute_process(
-            COMMAND git submodule add https://github.com/libsdl-org/SDL_net.git external/SDL_net
+            COMMAND git submodule add --force https://github.com/libsdl-org/SDL_net.git external/SDL_net
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         )
         execute_process(
@@ -269,7 +269,7 @@ target_include_directories(${PROJECT_NAME}
 
 if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/external/glm)
     execute_process(
-        COMMAND git submodule add https://github.com/g-truc/glm.git external/glm
+        COMMAND git submodule add --force https://github.com/g-truc/glm.git external/glm
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
     execute_process(
