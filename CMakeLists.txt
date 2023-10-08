@@ -104,10 +104,10 @@ endif(NOT CMAKE_BUILD_TYPE)
 
 # <-- SDL OPTIONS -->
 set(USE_SDL2 ON)
-set(USE_SDL_IMAGE OFF)
-set(USE_SDL_MIXER OFF)
-set(USE_SDL_TTF OFF)
-set(USE_SDL_NET OFF)
+set(USE_SDL_IMAGE ON)
+set(USE_SDL_MIXER ON)
+set(USE_SDL_TTF ON)
+set(USE_SDL_NET ON)
 
 # Add locations of other CMakelists.txt (one per call)
 add_subdirectory(
@@ -131,31 +131,30 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 )
 
 # <------------------------------------------->
-
 if(USE_SDL2)
-	# if folder not avalable
-	if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/external/SDL)
-  	  # Clone the submodule
-  	  execute_process(
-  	      COMMAND git submodule add https://github.com/libsdl-org/SDL.git external/SDL
- 	       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
- 	   )
- 	   execute_process(
- 	       COMMAND git checkout release-2.26.x
- 	       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/external/SDL/
- 	   )
-	endif()
+    # if folder not avalable
+    if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/external/SDL)
+        # Clone the submodule
+        execute_process(
+            COMMAND git submodule add https://github.com/libsdl-org/SDL.git external/SDL
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        )
+        execute_process(
+            COMMAND git checkout release-2.26.x
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/external/SDL/
+        )
+    endif()
 
-	# Add the submodule directory to the include path
-	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/include)
+    # Add the submodule directory to the include path
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/include)
 
-	# Add the submodule library to the project
-	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/SDL)
+    # Add the submodule library to the project
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/SDL)
 
-	# Link the submodule library to the main project
-	target_link_libraries(${PROJECT_NAME} PRIVATE SDL2)
+    # Link the submodule library to the main project
+    target_link_libraries(${PROJECT_NAME} PRIVATE SDL2)
 else()
-	message(STATUS "SDL3 is not supported yet but is coming soon (TM).")
+    message(STATUS "SDL3 is not supported yet but is coming soon (TM).")
 endif()
 
 if(USE_SDL_IMAGE)
@@ -182,13 +181,16 @@ endif()
 if(USE_SDL_MIXER)
     if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/external/SDL_mixer)
         execute_process(
-            COMMAND git submodule add https://github.com/libsdl-org/SDL_mixer.git external/SDL_mixer --recursive
+            COMMAND git submodule add https://github.com/libsdl-org/SDL_mixer.git external/SDL_mixer
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         )
         execute_process(
             COMMAND git checkout release-2.6.x
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/external/SDL_mixer/
         )
+        execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/external/
+            RESULT_VARIABLE GIT_SUBMOD_RESULT)
     endif()
 
     set(SDL2MIXER_INSTALL OFF)
@@ -208,13 +210,16 @@ endif()
 if(USE_SDL_TTF)
     if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/external/SDL_ttf)
         execute_process(
-            COMMAND git submodule add https://github.com/libsdl-org/SDL_ttf.git external/SDL_ttf --recursive
+            COMMAND git submodule add https://github.com/libsdl-org/SDL_ttf.git external/SDL_ttf
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         )
         execute_process(
             COMMAND git checkout release-2.20.x
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/external/SDL_ttf/
         )
+        execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/external/
+            RESULT_VARIABLE GIT_SUBMOD_RESULT)
     endif()
 
     set(SDL2TTF_INSTALL OFF)
@@ -262,6 +267,21 @@ target_include_directories(${PROJECT_NAME}
     PUBLIC external/sdl_image
 )
 
+if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/external/glm)
+    execute_process(
+        COMMAND git submodule add https://github.com/g-truc/glm.git external/glm
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+    execute_process(
+        COMMAND git checkout 0.9.9.8
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/external/glm/
+    )
+endif()
+
+add_subdirectory(
+    external/glm
+)
+
 # <------------------------------------------------>
 
 # <-- Add directory of external libs to link here: -->
@@ -274,6 +294,9 @@ target_link_directories(${PROJECT_NAME}
 # <-- Link needed Libs: -->
 target_link_libraries(${PROJECT_NAME}
     PRIVATE project_options project_warnings
+    PUBLIC glm
+
+    # PUBLIC eigen3
 )
 
 # <----------------------->
