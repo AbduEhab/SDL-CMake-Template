@@ -111,7 +111,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *arg[])
 
 		// Check for quit event
 		SDL_Event event;
-		SDL_PollEvent(&event);
+		while (SDL_PollEvent(&event))
 		{
 			ImGui_ImplSDL2_ProcessEvent(&event);
 
